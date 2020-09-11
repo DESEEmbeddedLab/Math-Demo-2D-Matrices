@@ -36,7 +36,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="MatrixDisp">
      <attribute name="title">
@@ -776,7 +776,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>100</y>
+           <y>210</y>
            <width>105</width>
            <height>27</height>
           </rect>
@@ -785,11 +785,11 @@
           <string>Determinant</string>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="Displaydeterminantbox_4">
+        <widget class="QDoubleSpinBox" name="Displaycramersdeterminantbox">
          <property name="geometry">
           <rect>
            <x>130</x>
-           <y>100</y>
+           <y>210</y>
            <width>100</width>
            <height>27</height>
           </rect>
@@ -808,7 +808,7 @@
          <property name="geometry">
           <rect>
            <x>130</x>
-           <y>170</y>
+           <y>130</y>
            <width>100</width>
            <height>27</height>
           </rect>
@@ -824,20 +824,20 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>140</y>
+           <y>100</y>
            <width>105</width>
            <height>27</height>
           </rect>
          </property>
          <property name="text">
-          <string>X</string>
+          <string>B</string>
          </property>
         </widget>
         <widget class="QDoubleSpinBox" name="Vectorxbox1">
          <property name="geometry">
           <rect>
            <x>130</x>
-           <y>140</y>
+           <y>100</y>
            <width>100</width>
            <height>27</height>
           </rect>
@@ -853,7 +853,7 @@
          <property name="geometry">
           <rect>
            <x>220</x>
-           <y>210</y>
+           <y>170</y>
            <width>99</width>
            <height>27</height>
           </rect>
@@ -872,7 +872,7 @@
           </rect>
          </property>
          <property name="text">
-          <string>B</string>
+          <string>X</string>
          </property>
         </widget>
         <widget class="QDoubleSpinBox" name="Vectorbbox2">
@@ -1271,8 +1271,6 @@
      </widget>
     </widget>
    </widget>
-   <zorder>tabWidget</zorder>
-   <zorder>Matrixinversebox_2</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

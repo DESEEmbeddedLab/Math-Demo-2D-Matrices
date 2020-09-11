@@ -18,10 +18,15 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         self.prev_y = 0.0
         self.updateflag = 0
         self.coordinateflag = 0
+        self.displayflag = 1
         self.center = np.array([0.0, 0.0, 0.0])
         self.front = np.array([0.0, 0.0, 1.0])
         self.up = np.array([0.0, 1.0, 0.0])
         self.matrix = np.array([[1.0, 0.0], [0.0, 1.0]])
+        self.matrix2 = np.array([[1.0, 0.0], [0.0, 1.0]])
+        self.matrix3 = np.array([[1.0, 0.0], [0.0, 1.0]])
+        self.vector1 = np.array([[0.0], [0.0]])
+        self.vector2 = np.array([[0.0], [0.0]])
 
     def paint_axis(self):
         origin = self.center
@@ -48,6 +53,10 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         GL.glEnd()  
 
     def paint_coordinates(self, x, y):
+        GL.glBegin(GL.GL_POINTS)
+        GL.glVertex3f(x, y, 0.0)
+        GL.glEnd()
+
         string = '(' + str(x) + ',' + str(y) + ')'
         length = len(string) - 3
 
@@ -55,36 +64,7 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         for i in range(0, len(string)):
             GLUT.glutBitmapCharacter(GLUT.GLUT_BITMAP_HELVETICA_18, ord(string[i]))
 
-    def paint_identity(self):
-        GL.glColor3f(0.5, 0.0, 0.5)   
-        GL.glBegin(GL.GL_LINES)
-        for i in range(-99, 100):
-            GL.glVertex3f(-100, i, 0)
-            GL.glVertex3f(100, i, 0)
-        GL.glEnd()
-
-        GL.glColor3f(0.0, 0.5, 0.5)   
-        GL.glBegin(GL.GL_LINES)
-        for i in range(-99, 100):
-            GL.glVertex3f(i, -100, 0)
-            GL.glVertex3f(i, 100, 0) 
-        GL.glEnd()
-
-        GL.glColor3f(0.0, 0.0, 0.0)   
-        x = int(self.center[0])
-        y = int(self.center[1])
-
-        self.paint_coordinates(0, 0)
-        
-        for i in range(x - 20, x + 20):
-            self.paint_coordinates(i, y)
-
-        for i in range(y - 20, y + 20):
-            self.paint_coordinates(x, i)
-
-    def paint_matrix(self, matrix):
-        GL.glEnable(GL.GL_LINE_STIPPLE)
-
+    def paint_matrix_lines(self, matrix):
         x = matrix.dot(np.array([1.0, 0.0]))
         y = matrix.dot(np.array([0.0, 1.0]))
 
@@ -102,36 +82,31 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
             GL.glVertex3f(i * x[0] + y[0] * 100, i * x[1] + y[1] * 100, 0)
         GL.glEnd()
 
-        GL.glDisable(GL.GL_LINE_STIPPLE)
+    def paint_matrix(self, matrix, r = 0.5, g = 0.5, b = 0.5, d = 0.0):
+        x = matrix.dot(np.array([1.0, 0.0]))
+        y = matrix.dot(np.array([0.0, 1.0]))
 
-        GL.glColor4f(0.4, 0.4, 0.4, 0.5)   
+        GL.glColor4f(r, g, b, 0.5)   
 
         GL.glBegin(GL.GL_POLYGON)
-        GL.glVertex3f(0.0 , 0.0, 0.0)
-        GL.glVertex3f(x[0], x[1], 0.0)
-        GL.glVertex3f(x[0] + y[0], x[1] + y[1], 0.0)
-        GL.glVertex3f(y[0], y[1], 0.0)
+        GL.glVertex3f(0.0 , 0.0, d)
+        GL.glVertex3f(x[0], x[1], d)
+        GL.glVertex3f(x[0] + y[0], x[1] + y[1], d)
+        GL.glVertex3f(y[0], y[1], d)
         GL.glEnd()
 
-        w, v = np.linalg.eig(self.matrix)
-        eig1 = w[0] * v[:, 0]
-        eig2 = w[1] * v[:, 1]
+    def paint_vector(self, vector, r = 0.0, g = 0.0, b = 0.0, d = 0.01):
+        if(vector[0] == 0 and vector[1] == 0):
+            return
 
-        GL.glColor3f(0.0, 0.0, 0.0)   
+        GL.glColor3f(r, g, b)   
         GL.glLineWidth(4)
 
-        if(np.iscomplexobj(eig1) == False):
-            GL.glBegin(GL.GL_LINES)
-            GL.glVertex3f(0.0 , 0.0, 0.01)
-            GL.glVertex3f(eig1[0], eig1[1], 0.01)
-            GL.glEnd()
+        GL.glBegin(GL.GL_LINES)
+        GL.glVertex3f(0.0 , 0.0, d)
+        GL.glVertex3f(vector[0], vector[1], d)
+        GL.glEnd()
 
-        if(np.iscomplexobj(eig2) == False):
-            GL.glBegin(GL.GL_LINES)
-            GL.glVertex3f(0.0 , 0.0, 0.01)
-            GL.glVertex3f(eig2[0], eig2[1], 0.01)
-            GL.glEnd()
-        
         GL.glLineWidth(2)
 
     def paintGL(self):
@@ -140,14 +115,55 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         GLUT.glutInit()
         GL.glClearColor(0.7, 0.7, 0.7, 0)		
         GL.glClearDepth(1)
-        GL.glLineWidth(2)
+
+        GL.glColor3f(0.0, 0.0, 0.0)   
+        x = int(self.center[0])
+        y = int(self.center[1])
+
+        self.paint_coordinates(0, 0)
+        
+        for i in range(x - 20, x + 20):
+            self.paint_coordinates(i, y)
+
+        for i in range(y - 20, y + 20):
+            self.paint_coordinates(x, i)
 
         if(self.coordinateflag):
             self.paint_axis()
 
-        self.paint_identity()
+        if(self.displayflag == 1):
+            self.paint_matrix_lines(np.array([[1.0, 0.0], [0.0, 1.0]]))
 
-        self.paint_matrix(self.matrix)
+            GL.glEnable(GL.GL_LINE_STIPPLE)
+            self.paint_matrix_lines(self.matrix)
+            GL.glDisable(GL.GL_LINE_STIPPLE)
+
+            self.paint_matrix(self.matrix)
+            self.paint_vector(self.vector1)
+            self.paint_vector(self.vector2)
+
+        if(self.displayflag == 2):
+            self.paint_matrix_lines(self.matrix)
+            self.paint_matrix(self.matrix)
+
+            GL.glEnable(GL.GL_LINE_STIPPLE)
+            self.paint_matrix_lines(self.matrix2)
+            GL.glEnable(GL.GL_LINE_STIPPLE)
+            self.paint_matrix(self.matrix2, 0.5, 0.0 , 0.5, 0.05)
+
+            self.paint_matrix(self.matrix3, 0.0, 0.5, 0.5, 0.1)
+
+        if(self.displayflag == 3):
+            self.paint_matrix_lines(self.matrix)
+            self.paint_matrix(self.matrix)
+
+            self.paint_matrix(self.matrix2, 0.5, 0.0 , 0.5, 0.05)
+            self.paint_matrix(self.matrix3, 0.0, 0.5, 0.5, 0.1)
+
+            self.paint_vector(self.vector1, 1, 1, 0.0, 0.15)
+            GL.glEnable(GL.GL_LINE_STIPPLE)
+            self.paint_vector(self.vector2, 1, 1, 0.0, 0.15)
+            GL.glDisable(GL.GL_LINE_STIPPLE)
 
     def initializeGL(self):
         print("\033[4;30;102m INITIALIZE GL\033[0m")
@@ -156,6 +172,8 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST)
+        GL.glLineWidth(2)
+        GL.glPointSize(4)
         GL.glLineStipple(1, 0xAA00)
 
     def loadScene(self):
@@ -205,7 +223,7 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
 
     def wheelEvent(self, event):
         delta = event.angleDelta().y() / 2400.0
-        self.center += self.front * delta
+        self.center[2] += delta
         self.updateflag = 1
 
     def keyPressEvent(self, event):
@@ -292,6 +310,7 @@ class mainWindow(QtWidgets.QMainWindow):
         self.Displaydeterminantbox = self.findChild(QtWidgets.QDoubleSpinBox, 'Displaydeterminantbox')
 
         self.Displayinversematrixbutton = self.findChild(QtWidgets.QPushButton, 'Displayinversematrixbutton')
+        self.Displayinversematrixbutton.clicked.connect(self.Displayinversematrixbuttonclicked)
 
         #Cramer's Matrix
         self.Displaycramersmatrixbox1 = self.findChild(QtWidgets.QDoubleSpinBox, 'Displaycramersmatrixbox1')
@@ -311,9 +330,17 @@ class mainWindow(QtWidgets.QMainWindow):
 
         self.Displaycramersdeterminantbox = self.findChild(QtWidgets.QDoubleSpinBox, 'Displaycramersdeterminantbox')
 
-        self.Displaycramersmatrixbutton = self.findChild(QtWidgets.QPushButton, 'Displaycramersmatrixbutton')
-        self.Calculatecramersbutton = self.findChild(QtWidgets.QPushButton, 'Calculatecramersbutton')
+        self.Vectorxbox1 = self.findChild(QtWidgets.QDoubleSpinBox, 'Vectorxbox1')
+        self.Vectorxbox2 = self.findChild(QtWidgets.QDoubleSpinBox, 'Vectorxbox2')
 
+        self.Vectorbbox1 = self.findChild(QtWidgets.QDoubleSpinBox, 'Vectorbbox1')
+        self.Vectorbbox2 = self.findChild(QtWidgets.QDoubleSpinBox, 'Vectorbbox2')
+
+        self.Displaycramersmatrixbutton = self.findChild(QtWidgets.QPushButton, 'Displaycramersmatrixbutton')
+        self.Displaycramersmatrixbutton.setDisabled(True)
+        self.Displaycramersmatrixbutton.clicked.connect(self.Displaycramersmatrixbuttonclicked)
+        self.Calculatecramersbutton = self.findChild(QtWidgets.QPushButton, 'Calculatecramersbutton')
+        self.Calculatecramersbutton.clicked.connect(self.Calculatecramersbuttonclicked)
 
     def setupUI(self):
         print("\033[1;101m SETUP UI \033[0m")
@@ -330,6 +357,8 @@ class mainWindow(QtWidgets.QMainWindow):
         self.openGLWidget.matrix = self.matrix
         self.Displaymatrix()
         self.Displaymatrixeigen()
+
+        self.inversematrix = np.array([[0.0, 0.0], [0.0, 0.0]])
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.updateopenGLWidget)
@@ -353,11 +382,24 @@ class mainWindow(QtWidgets.QMainWindow):
         self.matrix = np.array([[self.Displaymatrixbox1.value(), self.Displaymatrixbox2.value()], \
             [self.Displaymatrixbox3.value(), self.Displaymatrixbox4.value()]])
         self.openGLWidget.matrix = self.matrix
-        self.openGLWidget.updateflag = 1
         self.Displaymatrixeigen()
+        self.openGLWidget.updateflag = 1
 
     def Displaymatrixeigen(self):
         w, v = np.linalg.eig(self.matrix)
+
+        eig1 = w[0] * v[:, 0]
+        eig2 = w[1] * v[:, 1]
+
+        if(np.iscomplexobj(eig1)):
+            self.openGLWidget.vector1 = np.array([[0.0], [0.0]])
+        else:
+            self.openGLWidget.vector1 = eig1
+
+        if(np.iscomplexobj(eig2)):
+            self.openGLWidget.vector2 = np.array([[0.0], [0.0]])
+        else:
+            self.openGLWidget.vector2 = eig2
 
         if(np.iscomplexobj(w)):
             self.Eigenvalue1box.setText(str("{:.2f}".format(w[0].real)) + "+" + str("{:.2f}".format(w[0].imag)) + 'j')
@@ -390,6 +432,72 @@ class mainWindow(QtWidgets.QMainWindow):
         self.matrix = rotation.dot(scale.dot(shear))
         self.Displaymatrix()
         self.Displaymatrixeigen()
+
+    def Displayinversematrixbuttonclicked(self):
+        self.inversematrix = np.array([[self.Displayinversematrixbox1.value(), self.Displayinversematrixbox2.value()], \
+            [self.Displayinversematrixbox3.value(), self.Displayinversematrixbox4.value()]])
+
+        determinant = np.linalg.det(self.inversematrix)
+        self.adjointmatrix = np.array([[self.inversematrix[1, 1], -1 * self.inversematrix[0, 1]], \
+            [-1 * self.inversematrix[1, 0], self.inversematrix[0, 0]]])
+        self.Displaydeterminantbox.setValue(determinant)
+        self.Displayadjointmatrixbox1.setValue(self.adjointmatrix[0,0])
+        self.Displayadjointmatrixbox2.setValue(self.adjointmatrix[0,1])
+        self.Displayadjointmatrixbox3.setValue(self.adjointmatrix[1,0])
+        self.Displayadjointmatrixbox4.setValue(self.adjointmatrix[1,1])
+
+        if(determinant != 0):
+            self.invmatrix = self.adjointmatrix / determinant
+
+            self.Displayinvmatrixbox1.setValue(self.invmatrix[0,0])
+            self.Displayinvmatrixbox2.setValue(self.invmatrix[0,1])
+            self.Displayinvmatrixbox3.setValue(self.invmatrix[1,0])
+            self.Displayinvmatrixbox4.setValue(self.invmatrix[1,1])
+
+            self.openGLWidget.matrix = self.inversematrix
+            self.openGLWidget.matrix2 = self.adjointmatrix
+            self.openGLWidget.matrix3 = self.invmatrix
+            self.openGLWidget.displayflag = 2
+            self.openGLWidget.updateflag = 1
+
+    def Calculatecramersbuttonclicked(self):
+        self.cramersmatrix = np.array([[self.Displaycramersmatrixbox1.value(), self.Displaycramersmatrixbox2.value()], \
+            [self.Displaycramersmatrixbox3.value(), self.Displaycramersmatrixbox4.value()]])
+        self.vectorx = np.array([[self.Vectorxbox1.value()], [self.Vectorxbox2.value()]])
+
+        determinant = np.linalg.det(self.cramersmatrix)
+        self.Displaycramersdeterminantbox.setValue(determinant)
+        self.cramersmatrix1 = np.array([[self.vectorx[0, 0], self.cramersmatrix[0, 1]], [self.vectorx[1, 0], self.cramersmatrix[1, 1]]])
+        self.cramersmatrix2 = np.array([[self.cramersmatrix[0, 0], self.vectorx[0, 0]], [self.cramersmatrix[1, 0], self.vectorx[1, 0]]])
+
+        self.Displaycramers1matrixbox1.setValue(self.cramersmatrix1[0,0])
+        self.Displaycramers1matrixbox2.setValue(self.cramersmatrix1[0,1])
+        self.Displaycramers1matrixbox3.setValue(self.cramersmatrix1[1,0])
+        self.Displaycramers1matrixbox4.setValue(self.cramersmatrix1[1,1])
+
+        self.Displaycramers2matrixbox1.setValue(self.cramersmatrix2[0,0])
+        self.Displaycramers2matrixbox2.setValue(self.cramersmatrix2[0,1])
+        self.Displaycramers2matrixbox3.setValue(self.cramersmatrix2[1,0])
+        self.Displaycramers2matrixbox4.setValue(self.cramersmatrix2[1,1])
+
+        if(determinant != 0):
+            self.vectorb = np.array([[np.linalg.det(self.cramersmatrix1) / determinant], [np.linalg.det(self.cramersmatrix2) / determinant]])
+            self.Vectorbbox1.setValue(self.vectorb[0, 0])
+            self.Vectorbbox2.setValue(self.vectorb[1, 0])
+            self.Displaycramersmatrixbutton.setDisabled(False)
+
+        else:
+            self.Displaycramersmatrixbutton.setDisabled(True)
+
+    def Displaycramersmatrixbuttonclicked(self):
+        self.openGLWidget.matrix = self.cramersmatrix
+        self.openGLWidget.matrix2 = self.cramersmatrix1
+        self.openGLWidget.matrix3 = self.cramersmatrix2
+        self.openGLWidget.vector1 = self.vectorx
+        self.openGLWidget.vector2 = self.vectorb
+
+        self.openGLWidget.displayflag = 3
+        self.openGLWidget.updateflag = 1
 
 app = QtWidgets.QApplication(sys.argv)
 app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
