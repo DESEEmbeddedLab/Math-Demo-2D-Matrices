@@ -27,6 +27,8 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         self.matrix3 = np.array([[1.0, 0.0], [0.0, 1.0]])
         self.vector1 = np.array([[0.0], [0.0]])
         self.vector2 = np.array([[0.0], [0.0]])
+        self.vector3 = np.array([[0.0], [0.0]])
+        self.vector4 = np.array([[0.0], [0.0]])
 
     def paint_axis(self):
         origin = self.center
@@ -128,33 +130,41 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         for i in range(y - 20, y + 20):
             self.paint_coordinates(x, i)
 
+        GL.glDisable(GL.GL_LINE_STIPPLE)
+        self.paint_matrix_lines(np.array([[1.0, 0.0], [0.0, 1.0]]))
+
         if(self.coordinateflag):
             self.paint_axis()
 
         if(self.displayflag == 1):
-            self.paint_matrix_lines(np.array([[1.0, 0.0], [0.0, 1.0]]))
-
             GL.glEnable(GL.GL_LINE_STIPPLE)
             self.paint_matrix_lines(self.matrix)
             GL.glDisable(GL.GL_LINE_STIPPLE)
 
             self.paint_matrix(self.matrix)
+
             self.paint_vector(self.vector1)
             self.paint_vector(self.vector2)
 
+            GL.glEnable(GL.GL_LINE_STIPPLE)
+            self.paint_vector(self.vector3, 1, 1, 0.0, 0.15)
+            GL.glDisable(GL.GL_LINE_STIPPLE)
+            self.paint_vector(self.vector4, 1, 1, 0.0, 0.15)
+
         if(self.displayflag == 2):
+            GL.glEnable(GL.GL_LINE_STIPPLE)
             self.paint_matrix_lines(self.matrix)
+            GL.glDisable(GL.GL_LINE_STIPPLE)
             self.paint_matrix(self.matrix)
 
-            GL.glEnable(GL.GL_LINE_STIPPLE)
-            self.paint_matrix_lines(self.matrix2)
-            GL.glEnable(GL.GL_LINE_STIPPLE)
             self.paint_matrix(self.matrix2, 0.5, 0.0 , 0.5, 0.05)
 
             self.paint_matrix(self.matrix3, 0.0, 0.5, 0.5, 0.1)
 
         if(self.displayflag == 3):
+            GL.glEnable(GL.GL_LINE_STIPPLE)
             self.paint_matrix_lines(self.matrix)
+            GL.glDisable(GL.GL_LINE_STIPPLE)
             self.paint_matrix(self.matrix)
 
             self.paint_matrix(self.matrix2, 0.5, 0.0 , 0.5, 0.05)
@@ -271,6 +281,9 @@ class mainWindow(QtWidgets.QMainWindow):
         self.Displaymatrixbox4 = self.findChild(QtWidgets.QDoubleSpinBox, 'Displaymatrixbox4')
         self.Displaymatrixbutton = self.findChild(QtWidgets.QPushButton, 'Displaymatrixbutton')
 
+        self.Vectorxdisplaybox1 = self.findChild(QtWidgets.QDoubleSpinBox, 'Vectorxdisplaybox1')
+        self.Vectorxdisplaybox2 = self.findChild(QtWidgets.QDoubleSpinBox, 'Vectorxdisplaybox2')
+
         self.Eigenvalue1box = self.findChild(QtWidgets.QLineEdit, 'Eigenvalue1box')
         self.Eigenvector11box = self.findChild(QtWidgets.QLineEdit, 'Eigenvector11box')
         self.Eigenvector12box = self.findChild(QtWidgets.QLineEdit, 'Eigenvector12box')
@@ -382,7 +395,10 @@ class mainWindow(QtWidgets.QMainWindow):
         self.matrix = np.array([[self.Displaymatrixbox1.value(), self.Displaymatrixbox2.value()], \
             [self.Displaymatrixbox3.value(), self.Displaymatrixbox4.value()]])
         self.openGLWidget.matrix = self.matrix
+        self.openGLWidget.vector3 = np.array([[self.Vectorxdisplaybox1.value()], [self.Vectorxdisplaybox2.value()]])
+        self.openGLWidget.vector4 = self.matrix.dot(self.openGLWidget.vector3)
         self.Displaymatrixeigen()
+        self.openGLWidget.displayflag = 1
         self.openGLWidget.updateflag = 1
 
     def Displaymatrixeigen(self):
