@@ -111,6 +111,11 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
 
         GL.glLineWidth(2)
 
+    def paint_string(self, string, x, y):
+        GL.glWindowPos2s(x, y)
+        for i in range(0, len(string)):
+            GLUT.glutBitmapCharacter(GLUT.GLUT_BITMAP_HELVETICA_12, ord(string[i]))
+
     def paintGL(self):
         self.loadScene()
 
@@ -129,6 +134,12 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
 
         for i in range(y - 20, y + 20):
             self.paint_coordinates(x, i)
+
+        self.paint_string("Pitch and Yaw with mouse drag", 0, 65)
+        self.paint_string("Translate in plane x,y with arrow keys", 0, 50)
+        self.paint_string("Translate absolute z mouse scroll", 0, 35)
+        self.paint_string("Reset rotation with 'R'", 0, 20)
+        self.paint_string("Reset translation with 'T'", 0, 5)
 
         GL.glDisable(GL.GL_LINE_STIPPLE)
         self.paint_matrix_lines(np.array([[1.0, 0.0], [0.0, 1.0]]))
