@@ -372,6 +372,7 @@ class mainWindow(QtWidgets.QMainWindow):
         self.Displaymatrixeigen()
 
         self.inversematrix = np.array([[0.0, 0.0], [0.0, 0.0]])
+        self.openGLWidget.setFocus()
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.updateopenGLWidget)
@@ -400,6 +401,7 @@ class mainWindow(QtWidgets.QMainWindow):
         self.Displaymatrixeigen()
         self.openGLWidget.displayflag = 1
         self.openGLWidget.updateflag = 1
+        self.openGLWidget.setFocus()
 
     def Displaymatrixeigen(self):
         w, v = np.linalg.eig(self.matrix)
@@ -475,6 +477,7 @@ class mainWindow(QtWidgets.QMainWindow):
             self.openGLWidget.matrix3 = self.invmatrix
             self.openGLWidget.displayflag = 2
             self.openGLWidget.updateflag = 1
+        self.openGLWidget.setFocus()
 
     def Calculatecramersbuttonclicked(self):
         self.cramersmatrix = np.array([[self.Displaycramersmatrixbox1.value(), self.Displaycramersmatrixbox2.value()], \
@@ -514,6 +517,7 @@ class mainWindow(QtWidgets.QMainWindow):
 
         self.openGLWidget.displayflag = 3
         self.openGLWidget.updateflag = 1
+        self.openGLWidget.setFocus()
 
 app = QtWidgets.QApplication(sys.argv)
 app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
