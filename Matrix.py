@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets, uic
 
 import qdarkstyle
 
-import traceback, sys, os, shutil, math
+import traceback, sys, os, shutil, math, copy
 
 import numpy as np
 
@@ -406,9 +406,9 @@ class mainWindow(QtWidgets.QMainWindow):
     def Displaymatrixbuttonclicked(self):
         self.matrix = np.array([[self.Displaymatrixbox1.value(), self.Displaymatrixbox2.value()], \
             [self.Displaymatrixbox3.value(), self.Displaymatrixbox4.value()]])
-        self.openGLWidget.matrix = self.matrix
-        self.openGLWidget.vector3 = np.array([[self.Vectorxdisplaybox1.value()], [self.Vectorxdisplaybox2.value()]])
-        self.openGLWidget.vector4 = self.matrix.dot(self.openGLWidget.vector3)
+        self.openGLWidget.matrix = copy.deepcopy(self.matrix)
+        self.openGLWidget.vector3 = copy.deepcopy(np.array([[self.Vectorxdisplaybox1.value()], [self.Vectorxdisplaybox2.value()]]))
+        self.openGLWidget.vector4 = copy.deepcopy(self.matrix.dot(self.openGLWidget.vector3))
         self.Displaymatrixeigen()
         self.openGLWidget.displayflag = 1
         self.openGLWidget.updateflag = 1
@@ -460,7 +460,6 @@ class mainWindow(QtWidgets.QMainWindow):
 
         self.matrix = rotation.dot(scale.dot(shear))
         self.Displaymatrix()
-        self.Displaymatrixeigen()
 
     def Displayinversematrixbuttonclicked(self):
         self.inversematrix = np.array([[self.Displayinversematrixbox1.value(), self.Displayinversematrixbox2.value()], \
@@ -483,9 +482,9 @@ class mainWindow(QtWidgets.QMainWindow):
             self.Displayinvmatrixbox3.setValue(self.invmatrix[1,0])
             self.Displayinvmatrixbox4.setValue(self.invmatrix[1,1])
 
-            self.openGLWidget.matrix = self.inversematrix
-            self.openGLWidget.matrix2 = self.adjointmatrix
-            self.openGLWidget.matrix3 = self.invmatrix
+            self.openGLWidget.matrix = copy.deepcopy(self.inversematrix)
+            self.openGLWidget.matrix2 = copy.deepcopy(self.adjointmatrix)
+            self.openGLWidget.matrix3 = copy.deepcopy(self.invmatrix)
             self.openGLWidget.displayflag = 2
             self.openGLWidget.updateflag = 1
         self.openGLWidget.setFocus()
@@ -520,11 +519,11 @@ class mainWindow(QtWidgets.QMainWindow):
             self.Displaycramersmatrixbutton.setDisabled(True)
 
     def Displaycramersmatrixbuttonclicked(self):
-        self.openGLWidget.matrix = self.cramersmatrix
-        self.openGLWidget.matrix2 = self.cramersmatrix1
-        self.openGLWidget.matrix3 = self.cramersmatrix2
-        self.openGLWidget.vector1 = self.vectorx
-        self.openGLWidget.vector2 = self.vectorb
+        self.openGLWidget.matrix = copy.deepcopy(self.cramersmatrix)
+        self.openGLWidget.matrix2 = copy.deepcopy(self.cramersmatrix1)
+        self.openGLWidget.matrix3 = copy.deepcopy(self.cramersmatrix2)
+        self.openGLWidget.vector1 = copy.deepcopy(self.vectorx)
+        self.openGLWidget.vector2 = copy.deepcopy(self.vectorb)
 
         self.openGLWidget.displayflag = 3
         self.openGLWidget.updateflag = 1
