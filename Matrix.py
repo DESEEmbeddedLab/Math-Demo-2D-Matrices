@@ -210,7 +210,7 @@ class openGLDisplay(QtWidgets.QOpenGLWidget):
         )
 
         cam_pos = self.center + self.front * 10
-        GLU.gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], self.center[0], self.center[1], self.center[2], self.up[0], self.up[1], self.up[0])
+        GLU.gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], self.center[0], self.center[1], self.center[2], self.up[0], self.up[1], self.up[2])
 
     def mousePressEvent(self, event):
         self.prev_x = event.x()
